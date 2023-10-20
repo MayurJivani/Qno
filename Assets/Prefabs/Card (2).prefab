@@ -68,6 +68,16 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Selectable
       objectReference: {fileID: 0}
+    - target: {fileID: 3078023919453430577, guid: de10d08491edb0442992951867c253bb,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.00000004371139
+      objectReference: {fileID: 0}
+    - target: {fileID: 3078023919453430577, guid: de10d08491edb0442992951867c253bb,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -76,10 +86,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6638748300637550437}
-    - targetCorrespondingSourceObject: {fileID: 951011102456138778, guid: de10d08491edb0442992951867c253bb,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9179319263435822471}
     - targetCorrespondingSourceObject: {fileID: 951011102456138778, guid: de10d08491edb0442992951867c253bb,
         type: 3}
       insertIndex: -1
@@ -107,25 +113,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c71ffe943463fd438c17d0d102a032c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lightSideNumber: 
-  lightSideColour: 
-  darkSideNumber: 
-  darkSideColour: 
+  lightSideNumber: Pauli X
+  lightSideColour: Red
+  darkSideNumber: 4
+  darkSideColour: Pink
   animatorController: {fileID: 0}
   cardRenderer: {fileID: 0}
---- !u!114 &9179319263435822471
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2370131361135828752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a553e8aa0b9407547b0b054ed9116a76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animatorController: {fileID: 0}
 --- !u!65 &4079135729872832956
 BoxCollider:
   m_ObjectHideFlags: 0

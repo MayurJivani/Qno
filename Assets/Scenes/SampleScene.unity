@@ -549,6 +549,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   handManager: {fileID: 384860990}
   discardPile: {fileID: 768677445}
+  drawPile: {fileID: 1327363294}
   lerpDuration: 1
   numberOfCardsInDiscardPile: 0
 --- !u!1 &410087039
@@ -1032,7 +1033,7 @@ PrefabInstance:
     - target: {fileID: 8930398941917063517, guid: 70d1b3cfaa11fe74f8193e215ffc7d88,
         type: 3}
       propertyPath: m_Name
-      value: Card
+      value: Card.000
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8349713766492347328, guid: 70d1b3cfaa11fe74f8193e215ffc7d88, type: 3}
@@ -1519,7 +1520,7 @@ GameObject:
   - component: {fileID: 1591032981}
   - component: {fileID: 1591032980}
   m_Layer: 0
-  m_Name: Card
+  m_Name: Card.000
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

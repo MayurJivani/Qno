@@ -27,7 +27,7 @@ public class AddCardsToDeckObject : MonoBehaviour
         deckObject = GameObject.Find("DrawPile");
 
         // Initialize references to the card objects and their components.
-        topCard = deckObject.transform.Find("Card");
+        topCard = deckObject.transform.Find("Card.000");
         cardBelowTopCard = deckObject.transform.Find("Card.001");
         cardAboveBottomCard = deckObject.transform.Find("Card.046");
         bottomCard = deckObject.transform.Find("Card.047");
@@ -55,10 +55,7 @@ public class AddCardsToDeckObject : MonoBehaviour
 
     public void AddPropertiesToCardPrefab(Card cardComponent, Card deckCard)
     {
-        cardComponent.lightSideNumber = deckCard.lightSideNumber;
-        cardComponent.lightSideColour = deckCard.lightSideColour;
-        cardComponent.darkSideNumber = deckCard.darkSideNumber;
-        cardComponent.darkSideColour = deckCard.darkSideColour;
+        cardComponent.SetCardProperties(deckCard.lightSideNumber, deckCard.lightSideColour, deckCard.darkSideNumber, deckCard.darkSideColour);
         cardComponent.SetDarkSideMaterial();
         cardComponent.SetLightSideMaterial();
     }

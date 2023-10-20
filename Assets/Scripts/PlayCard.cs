@@ -1,5 +1,6 @@
 
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -12,7 +13,8 @@ public class PlayCard : MonoBehaviour
     private Card cardPlayed;
     public HandManager handManager;
     public GameObject discardPile;
-    public float lerpDuration = 0.1f;
+    public GameObject drawPile;
+    public float lerpDuration = 0.01f;
     public int numberOfCardsInDiscardPile = 0;
 
     private void Update()
@@ -21,7 +23,7 @@ public class PlayCard : MonoBehaviour
         if (!EventSystem.current.IsPointerOverGameObject() && Physics.Raycast(ray, out raycastHit))
         {
             highlight = raycastHit.transform;
-            if (Input.GetMouseButtonDown(0) && highlight.CompareTag("Selectable") && !hasCardBeenPlayed)
+            if (Input.GetMouseButtonDown(0) && highlight.CompareTag("Selectable") && !hasCardBeenPlayed && highlight && highlight.name != "DrawPile")
             {
                 cardPlayed = highlight.gameObject.GetComponent<Card>();
                 if (GameManager.IsLightSideUp())
@@ -30,7 +32,8 @@ public class PlayCard : MonoBehaviour
                     Debug.Log("Card Played: " + cardPlayed.darkSideColour + " " + cardPlayed.darkSideNumber);
                 //hasCardBeenPlayed = true;
                 handManager.RemoveCardFromHand(cardPlayed);
-                handManager.printCardsInHand();
+                handManager.printCardsInHand(handManager.getCardsInHand());
+                handManager.RepositionCards();
                 numberOfCardsInDiscardPile++;
                 //highlight.parent.transform.position = discardPile.transform.position;
 
@@ -44,7 +47,6 @@ public class PlayCard : MonoBehaviour
 
     private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, Vector3 targetRotation, float duration)
     {
-        Debug.Log("Lerp Started");
         float startTime = Time.time;
         Vector3 startPosition = cardTransform.position;
         Vector3 startRotation = cardTransform.eulerAngles;
