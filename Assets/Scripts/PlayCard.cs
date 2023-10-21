@@ -12,9 +12,17 @@ public class PlayCard : MonoBehaviour
     private Card cardPlayed;
     public HandManager handManager;
     public GameObject discardPile;
-    public float lerpDuration = 0.1f;
+    private float lerpDuration = 0.5f;
     public int numberOfCardsInDiscardPile = 0;
+    private Vector3 targetRotationOfPlayedCard;
 
+    private int lightSide = 0;
+    private int darkSide = 1;
+
+    private void Awake()
+    {
+        targetRotationOfPlayedCard = discardPile.transform.eulerAngles;
+    }
     private void Update()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -29,14 +37,16 @@ public class PlayCard : MonoBehaviour
                 else
                     Debug.Log("Card Played: " + cardPlayed.darkSideColour + " " + cardPlayed.darkSideNumber);
                 //hasCardBeenPlayed = true;
+                highlight.gameObject.tag = "Untagged";
+                Destroy(highlight.GetComponent<Animator>());
                 handManager.RemoveCardFromHand(cardPlayed);
                 handManager.printCardsInHand();
+                handManager.RepositionCards();
                 numberOfCardsInDiscardPile++;
-                //highlight.parent.transform.position = discardPile.transform.position;
 
                 highlight.parent.parent = null;
                 
-                StartCoroutine(LerpCardPosition(highlight.parent, discardPile.transform.position, discardPile.transform.eulerAngles, lerpDuration));
+                StartCoroutine(LerpCardPosition(highlight.parent, discardPile.transform.position, targetRotationOfPlayedCard, lerpDuration));
                 highlight.parent.parent = discardPile.transform;
             }
         }   
@@ -44,13 +54,26 @@ public class PlayCard : MonoBehaviour
 
     private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, Vector3 targetRotation, float duration)
     {
-        Debug.Log("Lerp Started");
+        Debug.Log("Initial Rotation:" + cardTransform.eulerAngles);
+        Debug.Log("Target Rotation:"+ targetRotation);
         float startTime = Time.time;
         Vector3 startPosition = cardTransform.position;
         Vector3 startRotation = cardTransform.eulerAngles;
 
-        targetPosition += new Vector3(Random.Range(0f, 0.5f) , Random.Range(0f, 0.5f), - numberOfCardsInDiscardPile * 0.5f);
-        targetRotation += new Vector3(Random.Range(0f, 10f), Random.Range(0f, 10f), Random.Range(0f, 10f));
+        
+
+        float zOffset = GameManager.IsLightSideUp() ? -lightSide * 0.1f : -darkSide * 0.1f;
+        targetPosition += new Vector3(0, 0, zOffset);
+
+        if (GameManager.IsLightSideUp())
+        {
+            lightSide++;
+        }
+        else
+        {
+            darkSide++;
+        }
+        Vector3 randomRotation = new Vector3(0, 0, Random.Range(-30f, 30f));
         while (Time.time - startTime < duration)
         {
             float t = (Time.time - startTime) / duration;
@@ -61,6 +84,9 @@ public class PlayCard : MonoBehaviour
 
         cardTransform.position = targetPosition;
         cardTransform.eulerAngles = targetRotation;
+        cardTransform.Find("Model").transform.localEulerAngles += randomRotation;
+
+        
     }
 
 

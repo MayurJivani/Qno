@@ -11,7 +11,8 @@ public class HandManager : MonoBehaviour
     public float lerpDuration = 1f;
 
     // List to keep track of all the cards in the hand.
-    private List<Transform> cardsInHand = new List<Transform>();
+    private static List<Transform> cardsInHandTransform = new List<Transform>();
+    private static List<Card> cardsInHand = new List<Card>();
 
     private void Awake()
     {
@@ -27,7 +28,6 @@ public class HandManager : MonoBehaviour
         // Calculate the card's position based on the previous cards and offset.
         int cardCount = cardsInHand.Count;
         Vector3 cardPosition = handObject.transform.position;
-        Debug.Log("HandObject position: " + cardPosition);
 
         // Draw the card at the calculated position.
         // Instantiate a new card from the prefab at the specified position.
@@ -53,41 +53,50 @@ public class HandManager : MonoBehaviour
             
         }
         // Add the card to the list of cards in the hand.
-        cardsInHand.Add(newCard.transform);
+        cardsInHandTransform.Add(newCard.transform);
+        cardsInHand.Add(newCard.GetComponentInChildren<Card>());
 
         // Check for available space and reposition cards if necessary.
-        RepositionCards(cardPosition);
+        RepositionCards();
     }
 
     public void RemoveCardFromHand(Card cardToRemove)
     {
-        Transform cardToRemoveFromList = null;
-        foreach (Transform cardObject in cardsInHand)
+        Transform cardToRemoveFromListTransform = null;
+        Card cardToRemoveFromList = null;
+        foreach (Transform cardObject in cardsInHandTransform)
         {
-            Card cardComponent = cardObject.GetComponentInChildren<Card>();
-            if(compareCards(cardComponent, cardToRemove))
+            Card card = cardObject.GetComponentInChildren<Card>();
+            if (compareCards(card, cardToRemove))
             {
-                cardToRemoveFromList = cardObject;
+                cardToRemoveFromListTransform = cardObject;
+                cardToRemoveFromList = card;
+                break;
             }
         }
 
         cardsInHand.Remove(cardToRemoveFromList);
+        cardsInHandTransform.Remove(cardToRemoveFromListTransform);
     }
 
     private bool compareCards(Card card1, Card card2)
     {
-        if(card1 != null && card2 != null) 
-        { 
-            card1.lightSideColour = card2.lightSideColour;
-            card1.lightSideNumber = card2.lightSideNumber;
-            card1.darkSideColour = card2.darkSideColour;
-            card1.darkSideNumber = card2.darkSideNumber;
-            return true;
+        if (card1 != null && card2 != null)
+        {
+            if (card1.lightSideColour != card2.lightSideColour
+                || card1.lightSideNumber != card2.lightSideNumber
+                || card1.darkSideColour != card2.darkSideColour
+                || card1.darkSideNumber != card2.darkSideNumber)
+            {
+                return false;
+            }
+            else
+                return true;
         }
         return false;
     }
 
-    private void RepositionCards(Vector3 newCardInitialPosition)
+    public void RepositionCards()
     {
         int cardCount = cardsInHand.Count;
 
@@ -108,7 +117,7 @@ public class HandManager : MonoBehaviour
 
 
             factor = factor - 2;
-            StartCoroutine(LerpCardPosition(cardsInHand[i], newPositionCard, lerpDuration));
+            StartCoroutine(LerpCardPosition(cardsInHandTransform[i], newPositionCard, lerpDuration));
         }
             //cardsInHand[i].localPosition = newPositionCard;
            // cardsInHand[i].localEulerAngles = newAngleCard;
@@ -132,10 +141,12 @@ public class HandManager : MonoBehaviour
     }
     public void printCardsInHand()
     {
-        for(int i=0; i<cardsInHand.Count; i++)
+        Debug.Log("Cards In Hand:");
+        for (int i = 0; i < cardsInHandTransform.Count; i++)
         {
-            Debug.Log("cardsInHand["+i+"] Position: " + cardsInHand[i].transform.position);
-            Debug.Log("cardsInHand[" + i + "] Angles: " + cardsInHand[i].transform.localEulerAngles);
+            Card card = cardsInHandTransform[i].GetComponentInChildren<Card>();
+            Debug.Log("Card " + i + ": ");
+            card.PrintCardInfo();
         }
     }
 }

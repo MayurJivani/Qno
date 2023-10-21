@@ -15,15 +15,16 @@ public class OutlineSelection : MonoBehaviour
         if (highlight != null)
         {
             highlight.gameObject.GetComponent<Outline>().enabled = false;
-            if(GameManager.IsLightSideUp())
+            if (highlight.name != "DrawPile" && highlight.gameObject.GetComponent<Animator>() != null)
             {
-                highlight.gameObject.GetComponent<Animator>().SetTrigger("HoverDownLight");
-                Debug.Log("Hover Down Light");
-            }
-            else
-            {
-                highlight.gameObject.GetComponent<Animator>().SetTrigger("HoverDownDark");
-                Debug.Log("Hover Down Dark");
+                if (GameManager.IsLightSideUp())
+                {
+                    highlight.gameObject.GetComponent<Animator>().SetTrigger("HoverDownLight");
+                }
+                else
+                {
+                    highlight.gameObject.GetComponent<Animator>().SetTrigger("HoverDownDark");
+                }
             }
             highlight = null;
         }
@@ -37,17 +38,15 @@ public class OutlineSelection : MonoBehaviour
                 if (highlight.gameObject.GetComponent<Outline>() != null)
                 {
                     highlight.gameObject.GetComponent<Outline>().enabled = true;
-                    if(!isAnimationPlaying)
+                    if(!isAnimationPlaying && highlight.name != "DrawPile")
                     {
                         if(GameManager.IsLightSideUp())
                         {
                             highlightAnimator.SetTrigger("HoverUpLight");
-                            Debug.Log("Hover Up Light");
                         }
                         else
                         {
                             highlightAnimator.SetTrigger("HoverUpDark");
-                            Debug.Log("Hover Up Dark");
                         }
                         isAnimationPlaying = true;
                     }
