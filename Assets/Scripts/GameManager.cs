@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     // Start is called before the first frame update
     HandManager handManager;
+    AddCardsToDeckObject cardUpdater;
     private List<Card> deck;
     static int cardNumberFromTop = 0;
     static int cardNumberFromBottom = 0;
@@ -27,6 +28,7 @@ public class GameManager : MonoBehaviour
     {
         deck = CardDeckGenerator.getDeck();
         handManager = GetComponent<HandManager>();
+        cardUpdater = GetComponent<AddCardsToDeckObject>();
         handObject = GameObject.Find("Plane");
         drawPile = GameObject.Find("DrawPile");
         discardPile = GameObject.Find("DiscardPile");
@@ -39,7 +41,7 @@ public class GameManager : MonoBehaviour
         topCardObjectAnimatorController = topCardObject.GetComponent<Animator>();
 
         bottomCardObject = drawPile.transform.Find("Card.047");
-        bottomCardObjectAnimatorController = bottomCardObject.GetComponent<Animator>(); 
+        bottomCardObjectAnimatorController = bottomCardObject.GetComponent<Animator>();
     }
 
 
@@ -93,7 +95,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator AddCardToHand()
     {
-        yield return new WaitForSeconds(1.6f);
+        yield return new WaitForSeconds(1.5f);
         if (isLightSideUp)
         {
             Card card = deck[cardNumberFromTop];
@@ -109,7 +111,7 @@ public class GameManager : MonoBehaviour
             handManager.DrawCard(card);
             cardNumberFromBottom++;
         }
-        
+        cardUpdater.UpdateTopAndBottomCard(cardNumberFromTop, cardNumberFromBottom);
     }
 
     public static int GetIndexOfCardOnTopOfDeck()

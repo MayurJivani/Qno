@@ -9,7 +9,6 @@ public class CardUpdateAnimationEvents : MonoBehaviour
     public GameObject gameManager;
     public void UpdateTopCardForLightSide()
     {
-        //Debug.Log("Light Animation Triggered");
         int currentIndexFromTop = GameManager.GetIndexOfCardOnTopOfDeck();
         AddCardsToDeckObject cardUpdater = gameManager.GetComponent<AddCardsToDeckObject>();
         cardUpdater.AddPropertiesToCardPrefab(cardUpdater.cardBelowTopCardComponent, cardUpdater.deck[currentIndexFromTop + 1]);
@@ -18,7 +17,6 @@ public class CardUpdateAnimationEvents : MonoBehaviour
     // This method is called by the animation event when you want to update the top card for the dark side.
     public void UpdateTopCardForDarkSide()
     {
-        //Debug.Log("Dark Animation Triggered");
         int currentIndexFromBottom = GameManager.GetIndexOfCardAtBottomOfDeck();
         AddCardsToDeckObject cardUpdater = gameManager.GetComponent<AddCardsToDeckObject>();
         int deckCount = cardUpdater.deck.Count;
