@@ -12,28 +12,33 @@ public class GameManager : MonoBehaviour
     static int cardNumberFromBottom = 0;
     private static bool isLightSideUp = true;
     private GameObject handObject;
-    private GameObject deckObject;
+    private GameObject drawPile;
+    private GameObject discardPile;
     private Transform topCardObject;
     private Transform bottomCardObject;
-    public Animator deckObjectAnimatorController;
-    public Animator handObjectAnimatorController;
 
-    public Animator topCardObjectAnimatorController;
-    public Animator bottomCardObjectAnimatorController;
+    private Animator drawPileAnimatorController;
+    private Animator discardPileAnimatorController;
+    private Animator handObjectAnimatorController;
+    private Animator topCardObjectAnimatorController;
+    private Animator bottomCardObjectAnimatorController;
+
     private void Awake()
     {
         deck = CardDeckGenerator.getDeck();
         handManager = GetComponent<HandManager>();
         handObject = GameObject.Find("Plane");
-        deckObject = GameObject.Find("DrawPile");
+        drawPile = GameObject.Find("DrawPile");
+        discardPile = GameObject.Find("DiscardPile");
 
-        deckObjectAnimatorController = deckObject.GetComponent<Animator>();
+        drawPileAnimatorController = drawPile.GetComponent<Animator>();
         handObjectAnimatorController = handObject.GetComponent<Animator>();
+        discardPileAnimatorController = discardPile.GetComponent<Animator>();
 
-        topCardObject = deckObject.transform.Find("Card"); 
+        topCardObject = drawPile.transform.Find("Card"); 
         topCardObjectAnimatorController = topCardObject.GetComponent<Animator>();
 
-        bottomCardObject = deckObject.transform.Find("Card.047");
+        bottomCardObject = drawPile.transform.Find("Card.047");
         bottomCardObjectAnimatorController = bottomCardObject.GetComponent<Animator>(); 
     }
 
@@ -47,7 +52,7 @@ public class GameManager : MonoBehaviour
             // Cast a ray from the mouse position to see if it hits the deck GameObject.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit) && hit.transform.gameObject == deckObject)
+            if (Physics.Raycast(ray, out hit) && hit.transform.gameObject == drawPile)
             {
                 HandleDeckClick();
             }
@@ -58,11 +63,13 @@ public class GameManager : MonoBehaviour
             handObjectAnimatorController.SetTrigger("MoveUpAnimation");
             if (isLightSideUp)
             {
-                deckObjectAnimatorController.SetTrigger("DeckFlipToDarkAnimation");
+                drawPileAnimatorController.SetTrigger("DeckFlipToDarkAnimation");
+                discardPileAnimatorController.SetTrigger("FlipDiscardPileToDark");
             }
             else
             {
-                deckObjectAnimatorController.SetTrigger("DeckFlipToLightAnimation");
+                drawPileAnimatorController.SetTrigger("DeckFlipToLightAnimation");
+                discardPileAnimatorController.SetTrigger("FlipDiscardPileToLight");
             }
             isLightSideUp = !isLightSideUp;
         }

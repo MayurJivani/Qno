@@ -482,10 +482,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a70eb635aa6d484a9c1e096e2fc70b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deckObjectAnimatorController: {fileID: 0}
-  handObjectAnimatorController: {fileID: 0}
-  topCardObjectAnimatorController: {fileID: 0}
-  bottomCardObjectAnimatorController: {fileID: 0}
 --- !u!114 &384860994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -549,7 +545,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   handManager: {fileID: 384860990}
   discardPile: {fileID: 768677445}
-  lerpDuration: 1
   numberOfCardsInDiscardPile: 0
 --- !u!1 &410087039
 GameObject:
@@ -1057,6 +1052,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 768677446}
+  - component: {fileID: 768677449}
+  - component: {fileID: 768677448}
+  - component: {fileID: 768677447}
   m_Layer: 0
   m_Name: DiscardPile
   m_TagString: Untagged
@@ -1079,6 +1077,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 224, y: 0, z: 0}
+--- !u!64 &768677447
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768677445}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!33 &768677448
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768677445}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!95 &768677449
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768677445}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 8b1eb3702050305469ae8ea448f4e1b8, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
