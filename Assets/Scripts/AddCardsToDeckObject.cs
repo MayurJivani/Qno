@@ -36,18 +36,24 @@ public class AddCardsToDeckObject : MonoBehaviour
         cardAboveBottomCardComponent = cardAboveBottomCard.GetComponent<Card>();
         bottomCardComponent = bottomCard.GetComponent<Card>();
     }
+
     private void Update()
     {
-        currentIndexFromTop = GameManager.GetIndexOfCardOnTopOfDeck();
-        currentIndexFromBottom = GameManager.GetIndexOfCardAtBottomOfDeck();
-
         if(onlyOnce)
         {
-            AddPropertiesToCardPrefab(cardBelowTopCardComponent, deck[1]);
-            AddPropertiesToCardPrefab(cardAboveBottomCardComponent, deck[deck.Count - 2]);
+            InitialiseDrawPileCards();
             onlyOnce = false;
         }
-
+    }
+    public void InitialiseDrawPileCards()
+    {
+        AddPropertiesToCardPrefab(topCardComponent, deck[0]);
+        AddPropertiesToCardPrefab(cardBelowTopCardComponent, deck[1]);
+        AddPropertiesToCardPrefab(cardAboveBottomCardComponent, deck[deck.Count - 2]);
+        AddPropertiesToCardPrefab(bottomCardComponent, deck[deck.Count - 1]);
+    }
+    public void UpdateTopAndBottomCard(int currentIndexFromTop, int currentIndexFromBottom)
+    {
         AddPropertiesToCardPrefab(topCardComponent, deck[currentIndexFromTop]);
         AddPropertiesToCardPrefab(bottomCardComponent, deck[deck.Count - 1 - currentIndexFromBottom]);
     }

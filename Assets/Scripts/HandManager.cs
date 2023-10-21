@@ -7,7 +7,6 @@ public class HandManager : MonoBehaviour
     public GameObject cardPrefab;
     public Transform handObject; // Reference to the parent hand object.
     public float zOffset = 0.05f;
-    public float angleDifference = 1f;
     public float lerpDuration = 1f;
 
     // List to keep track of all the cards in the hand.
@@ -111,22 +110,15 @@ public class HandManager : MonoBehaviour
         {
             float offset = cardSize.x / 4;
             Vector3 newPositionCard;
-            //Vector3 newAngleCard = new Vector3(0, 180 - factor * angleDifference, 0);
             newPositionCard = new Vector3(handCenter.x - factor * offset, i*(0.075f), i*(0.05f));
-            //Debug.Log("New Card Position for card " + i + " is :" + newPositionCard);
-
 
             factor = factor - 2;
             StartCoroutine(LerpCardPosition(cardsInHandTransform[i], newPositionCard, lerpDuration));
         }
-            //cardsInHand[i].localPosition = newPositionCard;
-           // cardsInHand[i].localEulerAngles = newAngleCard;
-       
     }
 
     private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, float duration)
     {
-        //Debug.Log("Lerp Started");
         float startTime = Time.time;
         Vector3 startPosition = cardTransform.localPosition;
 
