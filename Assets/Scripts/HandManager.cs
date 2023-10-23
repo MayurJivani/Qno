@@ -1,28 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
-using TMPro;
 
 public class HandManager : MonoBehaviour
 {
-    private GameObject handObject;
-    private GameObject cardPrefab;
+    public GameObject cardPrefab;
+    public Transform handObject; // Reference to the parent hand object.
     public float zOffset = 0.05f;
     public float lerpDuration = 1f;
 
     // List to keep track of all the cards in the hand.
-    private List<Transform> cardsInHandTransform = new List<Transform>();
-    private List<Card> cardsInHand = new List<Card>();
+    private static List<Transform> cardsInHandTransform = new List<Transform>();
+    private static List<Card> cardsInHand = new List<Card>();
 
     private void Awake()
     {
         Debug.Log("HandManager Initialized");
-    }
-
-    public HandManager(GameObject handObject, GameObject cardPrefab)
-    {
-        this.handObject = handObject;
-        this.cardPrefab = cardPrefab;
     }
 
 
@@ -38,7 +31,6 @@ public class HandManager : MonoBehaviour
         // Draw the card at the calculated position.
         // Instantiate a new card from the prefab at the specified position.
         GameObject newCard;
-
         Card cardComponent = cardPrefab.GetComponentInChildren<Card>();
         cardComponent.lightSideNumber = deckCard.lightSideNumber;
         cardComponent.lightSideColour = deckCard.lightSideColour;
@@ -59,16 +51,12 @@ public class HandManager : MonoBehaviour
             newCard = Instantiate(cardPrefab, cardPosition, Quaternion.Euler(0f, 180f, 180f), handObject.transform);
             
         }
-
-        int desiredLayer = handObject.layer;
-        newCard.transform.Find("Model").gameObject.layer = desiredLayer;
-        newCard.layer = desiredLayer;
         // Add the card to the list of cards in the hand.
         cardsInHandTransform.Add(newCard.transform);
         cardsInHand.Add(newCard.GetComponentInChildren<Card>());
 
         // Check for available space and reposition cards if necessary.
-        RepositionCards(handObject);
+        RepositionCards();
     }
 
     public void RemoveCardFromHand(Card cardToRemove)
@@ -107,7 +95,7 @@ public class HandManager : MonoBehaviour
         return false;
     }
 
-    public void RepositionCards(GameObject handObject)
+    public void RepositionCards()
     {
         int cardCount = cardsInHand.Count;
 
@@ -125,11 +113,9 @@ public class HandManager : MonoBehaviour
             newPositionCard = new Vector3(handCenter.x - factor * offset, i*(0.075f), i*(0.05f));
 
             factor = factor - 2;
-            cardsInHandTransform[i].localPosition = Vector3.Lerp(cardsInHandTransform[i].localPosition, newPositionCard, 1f);
-            //StartCoroutine(LerpCardPosition(cardsInHandTransform[i], newPositionCard, lerpDuration));
+            StartCoroutine(LerpCardPosition(cardsInHandTransform[i], newPositionCard, lerpDuration));
         }
     }
-
 
     private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, float duration)
     {

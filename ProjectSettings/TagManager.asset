@@ -5,7 +5,6 @@ TagManager:
   serializedVersion: 2
   tags:
   - Selectable
-  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -13,10 +12,10 @@ TagManager:
   - 
   - Water
   - UI
-  - Player1Hand
-  - Player2Hand
-  - Draw Pile
-  - Discard Pile
+  - Hand
+  - 
+  - 
+  - 
   - 
   - 
   - 
