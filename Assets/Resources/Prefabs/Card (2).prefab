@@ -86,7 +86,7 @@ PrefabInstance:
     - target: {fileID: 3078023919453430577, guid: de10d08491edb0442992951867c253bb,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3078023919453430577, guid: de10d08491edb0442992951867c253bb,
         type: 3}
@@ -96,7 +96,7 @@ PrefabInstance:
     - target: {fileID: 3078023919453430577, guid: de10d08491edb0442992951867c253bb,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -133,10 +133,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c71ffe943463fd438c17d0d102a032c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lightSideNumber: 7
-  lightSideColour: Red
-  darkSideNumber: Pauli Y
-  darkSideColour: Teal
+  lightSideNumber: Measurement
+  lightSideColour: Black
+  darkSideNumber: 1
+  darkSideColour: Purple
   animatorController: {fileID: 0}
   cardRenderer: {fileID: 0}
 --- !u!65 &4079135729872832956

@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.GlobalIllumination;
 
 [RequireComponent(typeof(CardDeckGenerator))]
 public class GameManager : MonoBehaviour
@@ -11,9 +10,10 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     AddCardsToDeckObject cardUpdater;
     private List<Card> deck;
+    private static List<Card> discardPileList;
 
     private float playCardLerpDuration = 0.5f;
-    private int lightSide = 0;
+    private int lightSide = 1;
     private int darkSide = 1;
 
     private static GameObject cardPrefab;
@@ -54,9 +54,12 @@ public class GameManager : MonoBehaviour
 
     private Transform cursorHoveredObject;
 
+    //Idea: When a Pauli card is played, change the texture on the cards to show the change of phases
+
     private void Awake()
     {
         deck = CardDeckGenerator.getDeck();
+        discardPileList = new List<Card>();
         InitialiseGameObjects();
         InitialiseAnimatorComponents();
         CreatePlayers();
@@ -134,7 +137,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Players Created");
     }
 
-    private static void StartNewGame()
+    private void StartNewGame()
     {
         activePlayer = player1;
 
@@ -147,11 +150,27 @@ public class GameManager : MonoBehaviour
         IterateChildrenRecursivelyAndSetBoxCollider(player1.handObject.transform, true);
         IterateChildrenRecursivelyAndSetBoxCollider(player2.handObject.transform, false);
         //TODO: Draw 7 cards in both player1's and player2's hand 
+        for(int i=0; i<14; i++)
+        {
+            HandleDeckClick();
+        }
+        StartCoroutine(WaitForCardsToBeInitialised());  
+        
+    }
+
+    IEnumerator WaitForCardsToBeInitialised()
+    {
+        yield return new WaitForSeconds(3f);
+        Debug.Log("Card Number after start: " + cardNumberFromTop);
+
+        //TODO: Open a card onto the draw pile. Handle cases where drawn card is a wild card
+        OpenFirstCard();
+
     }
 
     private void ChangeActivePlayer()
     {
-        if(activePlayer.playerName == player1.playerName)
+        if (activePlayer.playerName == player1.playerName)
         {
             activePlayer = player2;
         }
@@ -166,7 +185,7 @@ public class GameManager : MonoBehaviour
     private static IEnumerator ChangePlayerView()
     {
         yield return new WaitForSeconds(2f);
-        if(activePlayer.playerName == player1.playerName)
+        if (activePlayer.playerName == player1.playerName)
         {
             player1FrontCamera.enabled = true;
             player2BackCamera.enabled = true;
@@ -179,7 +198,7 @@ public class GameManager : MonoBehaviour
             player2FrontCamera.enabled = true;
             player1BackCamera.enabled = true;
 
-            player2BackCamera.enabled = false;  
+            player2BackCamera.enabled = false;
             player1FrontCamera.enabled = false;
         }
     }
@@ -204,7 +223,7 @@ public class GameManager : MonoBehaviour
         foreach (Transform child in parent)
         {
 
-            if(child.gameObject.GetComponent<BoxCollider>() != null)
+            if (child.gameObject.GetComponent<BoxCollider>() != null)
             {
                 child.gameObject.GetComponent<BoxCollider>().enabled = isColliderEnabled;
             }
@@ -258,17 +277,27 @@ public class GameManager : MonoBehaviour
     private void HandlePlayCard(Transform cursorHoveredObject)
     {
         Card cardPlayed = cursorHoveredObject.gameObject.GetComponent<Card>();
+
+        //TODO: Check if card being played is valid or not
+        if(!CheckIfCardPlayedIsValid(cardPlayed))
+        {
+            Debug.Log("This Card cannot be played");
+            return;
+        }
+
         if (isLightSideUp)
             Debug.Log("Card Played: " + cardPlayed.lightSideColour + " " + cardPlayed.lightSideNumber);
         else
             Debug.Log("Card Played: " + cardPlayed.darkSideColour + " " + cardPlayed.darkSideNumber);
-        //hasCardBeenPlayed = true;
 
         cursorHoveredObject.gameObject.tag = "Untagged";
-        Destroy(cursorHoveredObject.GetComponent<Animator>());
+        Destroy(cursorHoveredObject.GetComponent<Animator>()); //To stop each card from flipping
+
+        discardPileList.Add(cardPlayed);
+
         activePlayer.handManager.RemoveCardFromHand(cardPlayed);
         activePlayer.handManager.printCardsInHand();
-        activePlayer.handManager.RepositionCards(GameManager.activePlayer.handObject);
+        activePlayer.handManager.RepositionCards(activePlayer.handObject);
         numberOfCardsInDiscardPile++;
 
         cursorHoveredObject.parent.parent = null;
@@ -281,6 +310,61 @@ public class GameManager : MonoBehaviour
         cursorHoveredObject.parent.parent = discardPile.transform;
 
         ChangeActivePlayer();
+    }
+
+    private void OpenFirstCard()
+    {
+        Card card = deck[cardNumberFromTop];
+        GameObject newCard;
+
+        Card cardComponent = cardPrefab.GetComponentInChildren<Card>();
+        cardComponent.lightSideNumber = card.lightSideNumber;
+        cardComponent.lightSideColour = card.lightSideColour;
+        cardComponent.darkSideNumber = card.darkSideNumber;
+        cardComponent.darkSideColour = card.darkSideColour;
+
+        newCard = Instantiate(cardPrefab, discardPile.transform.position, discardPile.transform.rotation, discardPile.transform);
+
+        discardPileList.Add(card);
+        Transform model = newCard.transform.Find("Model");
+        model.gameObject.tag = "Untagged";
+        Destroy(model.GetComponent<Animator>());
+
+        int desiredLayer = LayerMask.NameToLayer("Discard Pile");
+        newCard.gameObject.layer = desiredLayer;    
+        model.gameObject.layer = desiredLayer;
+
+    }
+
+    private bool CheckIfCardPlayedIsValid(Card cardPlayed)
+    {
+        if (discardPileList == null)
+        {
+            return true; //For Game Initiailisation
+        }
+
+        Card cardOnTopOfDiscardPile = discardPileList.ElementAt(numberOfCardsInDiscardPile);
+
+        if (isLightSideUp)
+        {
+            return CheckCardValidity(cardPlayed.lightSideColour, cardPlayed.lightSideNumber, cardOnTopOfDiscardPile.lightSideColour, cardOnTopOfDiscardPile.lightSideNumber);
+        }
+        else
+        {
+            return CheckCardValidity(cardPlayed.darkSideColour, cardPlayed.darkSideNumber, cardOnTopOfDiscardPile.darkSideColour, cardOnTopOfDiscardPile.darkSideNumber);
+        }
+    }
+
+    private bool CheckCardValidity(string playedColor, string playedNumber, string topColor, string topNumber)
+    {
+        // Check if the played card is black (always valid)
+        if (playedColor.Equals("Black"))
+        {
+            return true;
+        }
+
+        // Check if the colors or numbers match
+        return playedColor.Equals(topColor) || playedNumber.Equals(topNumber);
     }
 
     private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, Vector3 targetRotation, float duration)
