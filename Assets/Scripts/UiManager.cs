@@ -63,6 +63,7 @@ public class UiManager : MonoBehaviour
     public void SelectPlayer(int player)
     {
         networkManager.SelectPlayer(player);
+        DisableAllScreens();
     }
     public void RestrictPlayerChoice(PlayerNo occupiedPlayer)
     {
