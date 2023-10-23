@@ -10,7 +10,7 @@ public class PlayCard : MonoBehaviour
     private RaycastHit raycastHit;
     private bool hasCardBeenPlayed = false;
     private Card cardPlayed;
-    public HandManager handManager;
+
     public GameObject discardPile;
     private float lerpDuration = 0.5f;
     public int numberOfCardsInDiscardPile = 0;
@@ -39,15 +39,21 @@ public class PlayCard : MonoBehaviour
                 //hasCardBeenPlayed = true;
                 highlight.gameObject.tag = "Untagged";
                 Destroy(highlight.GetComponent<Animator>());
-                handManager.RemoveCardFromHand(cardPlayed);
-                handManager.printCardsInHand();
-                handManager.RepositionCards();
+                //handManager.RemoveCardFromHand(cardPlayed);
+                //handManager.printCardsInHand();
+                //handManager.RepositionCards(GameManager.activePlayer.handObject);
                 numberOfCardsInDiscardPile++;
 
                 highlight.parent.parent = null;
+
+                int desiredLayer = LayerMask.NameToLayer("Discard Pile");
+                highlight.gameObject.layer = desiredLayer;
+                highlight.parent.gameObject.layer = desiredLayer;
                 
                 StartCoroutine(LerpCardPosition(highlight.parent, discardPile.transform.position, targetRotationOfPlayedCard, lerpDuration));
                 highlight.parent.parent = discardPile.transform;
+
+                //GameManager.ChangeActivePlayer();
             }
         }   
     }
