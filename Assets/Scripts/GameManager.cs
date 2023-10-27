@@ -56,6 +56,10 @@ public class GameManager : MonoBehaviour
 
     //Idea: When a Pauli card is played, change the texture on the cards to show the change of phases
 
+
+    // Debug
+    public Transform oppositeSide;
+
     private void Awake()
     {
         deck = CardDeckGenerator.getDeck();
@@ -372,7 +376,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Initial Rotation:" + cardTransform.eulerAngles);
         Debug.Log("Target Rotation:" + targetRotation);
         float startTime = Time.time;
-        Vector3 startPosition = cardTransform.position;
+        Vector3 startPosition = activePlayer.playerName == player1.playerName ? cardTransform.position : oppositeSide.position;
         Vector3 startRotation = cardTransform.eulerAngles;
 
 
