@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using System.Linq;
+using Unity.VisualScripting;
 
 public class HandManager : MonoBehaviour
 {
@@ -68,7 +70,7 @@ public class HandManager : MonoBehaviour
         cardsInHand.Add(newCard.GetComponentInChildren<Card>());
 
         // Check for available space and reposition cards if necessary.
-        RepositionCards(handObject);
+        RepositionCards();
     }
 
     public void RemoveCardFromHand(Card cardToRemove)
@@ -90,24 +92,43 @@ public class HandManager : MonoBehaviour
         cardsInHandTransform.Remove(cardToRemoveFromListTransform);
     }
 
-    private bool compareCards(Card card1, Card card2)
+
+    public Transform ReturnCardPosition(Card card)
     {
-        if (card1 != null && card2 != null)
+        int index = 0;
+        bool cardFound = false;
+        foreach (Card cardInHand in cardsInHand)
         {
-            if (card1.lightSideColour != card2.lightSideColour
-                || card1.lightSideNumber != card2.lightSideNumber
-                || card1.darkSideColour != card2.darkSideColour
-                || card1.darkSideNumber != card2.darkSideNumber)
+            if (compareCards(card, cardInHand))
             {
-                return false;
+                cardFound = true;
+                break;
             }
-            else
-                return true;
+            index++;
         }
-        return false;
+        if(!cardFound)
+        {
+            Debug.Log("Card not found in Hand");
+            return null;
+        }
+        Transform cardToBeReturned = cardsInHandTransform.ElementAt(index);
+        return cardToBeReturned;
     }
 
-    public void RepositionCards(GameObject handObject)
+    private bool compareCards(Card card1, Card card2)
+    {
+        if (card1.lightSideColour != card2.lightSideColour
+            || card1.lightSideNumber != card2.lightSideNumber
+            || card1.darkSideColour != card2.darkSideColour
+            || card1.darkSideNumber != card2.darkSideNumber)
+        {
+            return false;
+        }
+        else
+            return true;
+    }
+
+    public void RepositionCards()
     {
         int cardCount = cardsInHand.Count;
 
@@ -128,6 +149,11 @@ public class HandManager : MonoBehaviour
             cardsInHandTransform[i].localPosition = Vector3.Lerp(cardsInHandTransform[i].localPosition, newPositionCard, 1f);
             //StartCoroutine(LerpCardPosition(cardsInHandTransform[i], newPositionCard, lerpDuration));
         }
+    }
+
+    public void DestroyCard(Card cardToDestroy)
+    {
+        Destroy(cardToDestroy.gameObject);
     }
 
 

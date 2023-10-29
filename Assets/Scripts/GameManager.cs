@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CardDeckGenerator))]
 public class GameManager : MonoBehaviour
@@ -10,7 +11,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     AddCardsToDeckObject cardUpdater;
     private List<Card> deck;
-    private static List<Card> discardPileList;
+    public static List<Card> discardPileList;
+    public static List<GameObject> discardPileListGameObject;
 
     private float playCardLerpDuration = 0.5f;
     private int lightSide = 1;
@@ -20,18 +22,18 @@ public class GameManager : MonoBehaviour
 
     private static int cardNumberFromTop = 0;
     private static int cardNumberFromBottom = 0;
-    private static int numberOfCardsInDiscardPile = 0;
+    public static int numberOfCardsInDiscardPile = 0;
 
     private static bool isLightSideUp = true;
 
     private static GameObject player1HandObject;
     private static GameObject player2HandObject;
 
-    private static Camera player1FrontCamera;
-    private static Camera player1BackCamera;
+    public static Camera player1FrontCamera;
+    public static Camera player1BackCamera;
 
-    private static Camera player2FrontCamera;
-    private static Camera player2BackCamera;
+    public static Camera player2FrontCamera;
+    public static Camera player2BackCamera;
 
     private GameObject drawPile;
     private GameObject discardPile;
@@ -39,8 +41,8 @@ public class GameManager : MonoBehaviour
     private Transform topCardObject;
     private Transform bottomCardObject;
 
-    private Animator drawPileAnimatorController;
-    private Animator discardPileAnimatorController;
+    public static Animator drawPileAnimatorController;
+    public static Animator discardPileAnimatorController;
 
     private static Animator player1HandObjectAnimatorController;
     private static Animator player2HandObjectAnimatorController;
@@ -48,22 +50,37 @@ public class GameManager : MonoBehaviour
     private Animator topCardObjectAnimatorController;
     private Animator bottomCardObjectAnimatorController;
 
-    private static Player player1;
-    private static Player player2;
+    public static Player player1;
+    public static Player player2;
     public static Player activePlayer;
 
     private Transform cursorHoveredObject;
+
+    public GameObject buttonPanel; // The parent object containing the buttons
+    public Button keepButton;
+    public Button playButton;
+
+    private bool keepButtonClicked = false;
+    private bool playButtonClicked = false;
+
+    private bool isGameInitailising = false;
+
+    private bool wasSuperpositionPlayed = false;
+
+    public bool check;
 
     //Idea: When a Pauli card is played, change the texture on the cards to show the change of phases
 
     private void Awake()
     {
+        buttonPanel.SetActive(false);
         deck = CardDeckGenerator.getDeck();
         discardPileList = new List<Card>();
+        discardPileListGameObject = new List<GameObject>();
         InitialiseGameObjects();
         InitialiseAnimatorComponents();
         CreatePlayers();
-        StartNewGame();
+        StartCoroutine(StartNewGame()); 
     }
 
     private void InitialiseGameObjects()
@@ -137,7 +154,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Players Created");
     }
 
-    private void StartNewGame()
+    private IEnumerator StartNewGame()
     {
         activePlayer = player1;
 
@@ -149,12 +166,15 @@ public class GameManager : MonoBehaviour
 
         IterateChildrenRecursivelyAndSetBoxCollider(player1.handObject.transform, true);
         IterateChildrenRecursivelyAndSetBoxCollider(player2.handObject.transform, false);
+
+        isGameInitailising = true;
         //TODO: Draw 7 cards in both player1's and player2's hand 
         for(int i=0; i<14; i++)
         {
-            HandleDeckClick();
+            yield return HandleDeckClick();
         }
-        StartCoroutine(WaitForCardsToBeInitialised());  
+        yield return StartCoroutine(WaitForCardsToBeInitialised());
+        isGameInitailising = false;
         
     }
 
@@ -218,7 +238,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private static void IterateChildrenRecursivelyAndSetBoxCollider(Transform parent, bool isColliderEnabled)
+    public static void IterateChildrenRecursivelyAndSetBoxCollider(Transform parent, bool isColliderEnabled)
     {
         foreach (Transform child in parent)
         {
@@ -230,6 +250,11 @@ public class GameManager : MonoBehaviour
             // Recursively iterate through this child's children
             IterateChildrenRecursivelyAndSetBoxCollider(child, isColliderEnabled);
         }
+    }
+
+    private void ApplyColourSuperposition()
+    {
+
     }
 
 
@@ -244,17 +269,30 @@ public class GameManager : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit) && hit.transform.gameObject == drawPile)
             {
-                HandleDeckClick();
+                StartCoroutine(HandleDeckClick());
             }
+        }
+
+        if(Input.GetMouseButtonDown(0))
+        {
+            Camera playerCamera = activePlayer.playerName.Equals(player1.playerName) ? player1FrontCamera : player2FrontCamera;
+            Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
             if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
             {
                 cursorHoveredObject = hit.transform;
                 if (Input.GetMouseButtonDown(0) && cursorHoveredObject.CompareTag("Selectable") && hit.transform.gameObject != drawPile) //&& !hasCardBeenPlayed)
                 {
-                    HandlePlayCard(cursorHoveredObject);
+                    if(HandlePlayCard(cursorHoveredObject))
+                        ChangeActivePlayer();
                 }
             }
         }
+
+        if(Input.GetMouseButtonDown(0) && check)
+            ApplyColourSuperposition();
+
+ 
 
         if (Input.GetKeyDown(KeyCode.F))
         {
@@ -272,17 +310,20 @@ public class GameManager : MonoBehaviour
             }
             isLightSideUp = !isLightSideUp;
         }
+
+        
     }
 
-    private void HandlePlayCard(Transform cursorHoveredObject)
+    //Returns true if the card was played, else returns false
+    private bool HandlePlayCard(Transform cursorHoveredObject)
     {
         Card cardPlayed = cursorHoveredObject.gameObject.GetComponent<Card>();
 
         //TODO: Check if card being played is valid or not
-        if(!CheckIfCardPlayedIsValid(cardPlayed))
+        if (!CheckIfCardPlayedIsValid(cardPlayed))
         {
             Debug.Log("This Card cannot be played");
-            return;
+            return false;
         }
 
         if (isLightSideUp)
@@ -293,11 +334,24 @@ public class GameManager : MonoBehaviour
         cursorHoveredObject.gameObject.tag = "Untagged";
         Destroy(cursorHoveredObject.GetComponent<Animator>()); //To stop each card from flipping
 
-        discardPileList.Add(cardPlayed);
+        //If light side is up, add the card to the end of the discard pile list. Hence when card face is light, top card will always be at 
+        //'numberOfCardsInDiscardPile' index.
+        if (isLightSideUp)
+        { 
+            discardPileList.Add(cardPlayed);
+            discardPileListGameObject.Add(cursorHoveredObject.gameObject);
+        }
+        //Else add the card to the beginning of the discard pile list. Hence when card face is dark, top card will always be at
+        //'0th' index.
+        else
+        {
+            discardPileList.Insert(0, cardPlayed);
+            discardPileListGameObject.Insert(0, cursorHoveredObject.gameObject);
+        }
 
         activePlayer.handManager.RemoveCardFromHand(cardPlayed);
         activePlayer.handManager.printCardsInHand();
-        activePlayer.handManager.RepositionCards(activePlayer.handObject);
+        activePlayer.handManager.RepositionCards();
         numberOfCardsInDiscardPile++;
 
         cursorHoveredObject.parent.parent = null;
@@ -306,10 +360,10 @@ public class GameManager : MonoBehaviour
         cursorHoveredObject.gameObject.layer = desiredLayer;
         cursorHoveredObject.parent.gameObject.layer = desiredLayer;
 
-        StartCoroutine(LerpCardPosition(cursorHoveredObject.parent, discardPile.transform.position, discardPile.transform.eulerAngles, playCardLerpDuration));
+        StartCoroutine(LerpCardPosition(cursorHoveredObject.parent, discardPile.transform.position, discardPile.transform.eulerAngles, playCardLerpDuration, cardPlayed));
         cursorHoveredObject.parent.parent = discardPile.transform;
 
-        ChangeActivePlayer();
+        return true;
     }
 
     private void OpenFirstCard()
@@ -326,6 +380,8 @@ public class GameManager : MonoBehaviour
         newCard = Instantiate(cardPrefab, discardPile.transform.position, discardPile.transform.rotation, discardPile.transform);
 
         discardPileList.Add(card);
+        discardPileListGameObject.Add(newCard);
+
         Transform model = newCard.transform.Find("Model");
         model.gameObject.tag = "Untagged";
         Destroy(model.GetComponent<Animator>());
@@ -343,7 +399,12 @@ public class GameManager : MonoBehaviour
             return true; //For Game Initiailisation
         }
 
-        Card cardOnTopOfDiscardPile = discardPileList.ElementAt(numberOfCardsInDiscardPile);
+        Card cardOnTopOfDiscardPile;
+
+        if (isLightSideUp)
+            cardOnTopOfDiscardPile = discardPileList.ElementAt(numberOfCardsInDiscardPile);
+        else
+            cardOnTopOfDiscardPile = discardPileList.ElementAt(0);
 
         if (isLightSideUp)
         {
@@ -351,6 +412,19 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            if (cardOnTopOfDiscardPile.darkSideNumber.Equals("Superposition"))
+            {
+                if (cardPlayed.darkSideNumber.Equals("Measurement") || cardPlayed.darkSideNumber.Equals("Superposition"))
+                {
+                    wasSuperpositionPlayed = false;
+                    return true;
+                }
+                else
+                {
+                    wasSuperpositionPlayed = true;
+                    return false;
+                }
+            }
             return CheckCardValidity(cardPlayed.darkSideColour, cardPlayed.darkSideNumber, cardOnTopOfDiscardPile.darkSideColour, cardOnTopOfDiscardPile.darkSideNumber);
         }
     }
@@ -367,14 +441,162 @@ public class GameManager : MonoBehaviour
         return playedColor.Equals(topColor) || playedNumber.Equals(topNumber);
     }
 
-    private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, Vector3 targetRotation, float duration)
+    
+
+    private IEnumerator HandleDeckClick()
+    {
+        if (isLightSideUp)
+        {
+            topCardObjectAnimatorController.SetTrigger("DrawLightCardAnimation");
+            yield return StartCoroutine(AddCardToHand());
+        }
+        else
+        {
+            bottomCardObjectAnimatorController.SetTrigger("DrawDarkCardAnimation");
+            yield return StartCoroutine(AddCardToHand());
+        }
+        // TODO: Handle case when cardNumber >= 108
+    }
+
+
+    IEnumerator AddCardToHand()
+    {
+        yield return new WaitForSeconds(1.5f);
+        if (isLightSideUp)
+        {
+            Card card = deck[cardNumberFromTop];
+            Debug.Log("Deck Card Info:");
+            card.PrintCardInfo();
+            activePlayer.handManager.DrawCard(card);
+            if(!isGameInitailising)
+            {
+                if (CheckIfCardPlayedIsValid(card))
+                {
+                    buttonPanel.SetActive(true);
+
+                    keepButton.interactable = true;
+                    playButton.interactable = true;
+
+                    yield return WaitForButtonSelection(card);
+
+                    keepButton.interactable = false;
+                    playButton.interactable = false;
+                    buttonPanel.SetActive(false);
+                }
+            }
+            ChangeActivePlayer();
+            cardNumberFromTop++;
+        }
+        else
+        {
+            Card card = deck[deck.Count - 1 - cardNumberFromBottom];
+            card.PrintCardInfo();
+            activePlayer.handManager.DrawCard(card);
+            if (!isGameInitailising)
+            {
+                if (CheckIfCardPlayedIsValid(card))
+                {
+                    buttonPanel.SetActive(true);
+
+                    keepButton.interactable = true;
+                    playButton.interactable = true;
+
+                    yield return WaitForButtonSelection(card);
+
+                    keepButton.interactable = false;
+                    playButton.interactable = false;
+                    buttonPanel.SetActive(false);
+                }
+            }
+            if (!wasSuperpositionPlayed)
+                ChangeActivePlayer();
+            cardNumberFromBottom++;
+        }
+        cardUpdater.UpdateTopAndBottomCard(cardNumberFromTop, cardNumberFromBottom);
+    }
+
+    IEnumerator WaitForButtonSelection(Card card)
+    {
+        // This coroutine waits for a button click.
+        while (true)
+        {
+            // Check if either button was clicked.
+            if (keepButtonClicked)
+            {
+                //This is the condition when a superposition card was played and the opponent is drawing cards and draws a superposition card/measurement card
+                //and still chooses to keep the card. In that case the opponent should continue drawing cards.
+                if(!isLightSideUp)
+                {
+                    Card cardOnTopOfDiscardPile = discardPileList.ElementAt(0);
+                    if (cardOnTopOfDiscardPile.darkSideNumber.Equals("Superposition"))
+                    {
+                        wasSuperpositionPlayed = true;
+                    }
+                }
+                
+                keepButtonClicked = false;
+                yield break; // Exit the coroutine.
+            }
+            else if (playButtonClicked)
+            {
+                Transform cardToPlay = activePlayer.handManager.ReturnCardPosition(card).Find("Model");
+                HandlePlayCard(cardToPlay);
+                playButtonClicked = false;
+                yield break; // Exit the coroutine.
+            }
+
+            yield return null; // Yield to the next frame.
+        }
+    }
+
+    public void OnKeepButtonClick()
+    {
+        keepButtonClicked = true;
+    }
+
+    public void OnPlayButtonClick()
+    {
+        playButtonClicked = true;
+    }
+
+    public static int GetIndexOfCardOnTopOfDeck()
+    {
+        return cardNumberFromTop;
+    }
+
+    public static int GetIndexOfCardAtBottomOfDeck()
+    {
+        return cardNumberFromBottom;
+    }
+
+    public static bool IsLightSideUp()
+    {
+        return isLightSideUp;
+    }
+
+    public static void FlipValueOfIsLightSideUp()
+    {
+        isLightSideUp = !isLightSideUp;
+    }
+
+    private IEnumerator LerpCardPosition(Transform cardTransform, Vector3 targetPosition, Vector3 targetRotation, float duration, Card cardPlayed)
     {
         Debug.Log("Initial Rotation:" + cardTransform.eulerAngles);
-        Debug.Log("Target Rotation:" + targetRotation);
+        
+        Debug.Log("Initial Local Rotation:" + cardTransform.Find("Model").localEulerAngles);
         float startTime = Time.time;
         Vector3 startPosition = cardTransform.position;
         Vector3 startRotation = cardTransform.eulerAngles;
 
+
+
+        Transform cardModel = cardTransform.Find("Model");
+        Vector3 localRotationToAccountForCardFace;
+        if(!isLightSideUp)
+        { 
+            targetRotation += new Vector3(-180f, 0f, 180f);
+        }
+        Debug.Log("Target Rotation:" + targetRotation);
 
         float zOffset = isLightSideUp ? -lightSide * 0.1f : -darkSide * 0.1f;
         targetPosition += new Vector3(0, 0, zOffset);
@@ -393,65 +615,16 @@ public class GameManager : MonoBehaviour
             float t = (Time.time - startTime) / duration;
             cardTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
             cardTransform.eulerAngles = Vector3.Lerp(startRotation, targetRotation, t);
+            cardModel.localEulerAngles = Vector3.Lerp(cardModel.localEulerAngles, cardModel.localEulerAngles + randomRotation, t);
             yield return null;
         }
 
         cardTransform.position = targetPosition;
         cardTransform.eulerAngles = targetRotation;
-        cardTransform.Find("Model").transform.localEulerAngles += randomRotation;
-    }
+        cardTransform.Find("Model").localEulerAngles += randomRotation;
 
-    private void HandleDeckClick()
-    {
-        if (isLightSideUp)
-        {
-            topCardObjectAnimatorController.SetTrigger("DrawLightCardAnimation");
-            StartCoroutine(AddCardToHand());
-        }
-        else
-        {
-            bottomCardObjectAnimatorController.SetTrigger("DrawDarkCardAnimation");
-            StartCoroutine(AddCardToHand());
-        }
-        // TODO: Handle case when cardNumber >= 108
-    }
+        yield return new WaitForSeconds(2f);
 
-
-    IEnumerator AddCardToHand()
-    {
-        yield return new WaitForSeconds(1.5f);
-        if (isLightSideUp)
-        {
-            Card card = deck[cardNumberFromTop];
-            Debug.Log("Deck Card Info:");
-            card.PrintCardInfo();
-            activePlayer.handManager.DrawCard(card);
-            ChangeActivePlayer();
-            cardNumberFromTop++;
-        }
-        else
-        {
-            Card card = deck[deck.Count - 1 - cardNumberFromBottom];
-            card.PrintCardInfo();
-            activePlayer.handManager.DrawCard(card);
-            ChangeActivePlayer();
-            cardNumberFromBottom++;
-        }
-        cardUpdater.UpdateTopAndBottomCard(cardNumberFromTop, cardNumberFromBottom);
-    }
-
-    public static int GetIndexOfCardOnTopOfDeck()
-    {
-        return cardNumberFromTop;
-    }
-
-    public static int GetIndexOfCardAtBottomOfDeck()
-    {
-        return cardNumberFromBottom;
-    }
-
-    public static bool IsLightSideUp()
-    {
-        return isLightSideUp;
+        CardEffect.ApplyCardEffect(cardPlayed);
     }
 }

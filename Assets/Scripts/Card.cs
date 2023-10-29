@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Card: MonoBehaviour
+public class Card : MonoBehaviour
 {
     Transform parent;
     public string lightSideNumber;
@@ -48,13 +48,14 @@ public class Card: MonoBehaviour
         // Check for user input (e.g., mouse click) to flip the card.
         if (Input.GetKeyDown(KeyCode.F))
         {
-           FlipCard();
+            FlipCard();
         }
+
     }
 
-    private void FlipCard()
+    public void FlipCard()
     {
-        Debug.Log("Light Side Up After Flip: "+ GameManager.IsLightSideUp());
+        Debug.Log("Light Side Up After Flip: " + GameManager.IsLightSideUp());
 
         if (GameManager.IsLightSideUp())
         {
@@ -73,7 +74,7 @@ public class Card: MonoBehaviour
         cardMaterials.Add("BackFace_Card", Instantiate(Resources.Load<Material>("Materials/BackFace_Card (1)")));
         cardMaterials.Add("Black", Resources.Load<Material>("Materials/Black"));
 
-                                                //Top Colour         //Bottom Colour    
+        //Top Colour         //Bottom Colour    
         materialColours.Add("Red", new Color[] { hexToRGB("FF7474"), hexToRGB("F10000") });
         materialColours.Add("Green", new Color[] { hexToRGB("55FF60"), hexToRGB("00FF00") });
         materialColours.Add("Blue", new Color[] { hexToRGB("55A3FF"), hexToRGB("0028FF") });
@@ -158,6 +159,52 @@ public class Card: MonoBehaviour
         }
     }
 
+
+    public void SetLightSideColourTo(string lightSideColour) //Function to change the material colour of a card in case a special card is played
+    {
+        this.lightSideColour = lightSideColour;
+        Material[] mats = cardRenderer.materials;
+        // Apply the material from the dictionary based on the card type.
+        if (materialColours.ContainsKey(lightSideColour))
+        {
+            Color[] colours = materialColours[lightSideColour];
+            mats[1] = cardMaterials["FrontFace_Card"];
+            mats[1].SetColor("_TopColor", colours[0]);
+            mats[1].SetColor("_BottomColor", colours[1]);
+            mats[1].SetColor("_BorderColor", Color.white);
+            cardRenderer.materials = mats;
+        }
+        else
+        {
+            // Handle the case where the card type is not found in the dictionary.
+            Debug.LogError($"Material for card type '{lightSideColour}' not found.");
+        }
+    }
+
+
+    public void SetLightSideColourAndNumberTo(string lightSideColour, string number)
+    {
+        this.lightSideColour = lightSideColour;
+        this.lightSideNumber = number;
+        Material[] mats = cardRenderer.materials;
+        if (materialColours.ContainsKey(lightSideColour))
+        {
+            Color[] colours = materialColours[lightSideColour];
+            mats[1] = cardMaterials["FrontFace_Card"];
+            mats[1].SetColor("_TopColor", colours[0]);
+            mats[1].SetColor("_BottomColor", colours[1]);
+            mats[1].SetColor("_BorderColor", Color.white);
+            mats[1].SetTexture("_Texture", lightTextures[number]);
+            cardRenderer.materials = mats;
+        }
+        else
+        {
+            // Handle the case where the card type is not found in the dictionary.
+            Debug.LogError($"Material for card type '{lightSideColour}' not found.");
+        }
+    }
+
+
     public void SetDarkSideMaterial()
     {
         /// Determine the card type based on properties like lightSideNumber and lightSideColour.
@@ -182,6 +229,51 @@ public class Card: MonoBehaviour
             Debug.LogError($"Material for card type '{cardColour}' not found.");
         }
     }
+
+    public void SetDarkSideColourTo(string darkSideColour) //Function to change the material colour of a card in case a special card is played
+    {
+        this.darkSideColour = darkSideColour;
+        Material[] mats = cardRenderer.materials;
+        // Apply the material from the dictionary based on the card type.
+        if (materialColours.ContainsKey(darkSideColour))
+        {
+            Color[] colours = materialColours[darkSideColour];
+            mats[0] = cardMaterials["BackFace_Card"];
+            mats[0].SetColor("_TopColor", colours[0]);
+            mats[0].SetColor("_BottomColor", colours[1]);
+            mats[0].SetColor("_BorderColor", Color.black);
+            cardRenderer.materials = mats;
+        }
+        else
+        {
+            // Handle the case where the card type is not found in the dictionary.
+            Debug.LogError($"Material for card type '{darkSideColour}' not found.");
+        }
+    }
+
+
+    public void SetDarkSideColourAndNumberTo(string darkSideColour, string number)
+    {
+        this.darkSideColour = darkSideColour;
+        this.darkSideNumber = number;
+        Material[] mats = cardRenderer.materials;
+        if (materialColours.ContainsKey(darkSideColour))
+        {
+            Color[] colours = materialColours[darkSideColour];
+            mats[0] = cardMaterials["BackFace_Card"];
+            mats[0].SetColor("_TopColor", colours[0]);
+            mats[0].SetColor("_BottomColor", colours[1]);
+            mats[0].SetColor("_BorderColor", Color.black);
+            mats[0].SetTexture("_Texture", darkTextures[number]);
+            cardRenderer.materials = mats;
+        }
+        else
+        {
+            // Handle the case where the card type is not found in the dictionary.
+            Debug.LogError($"Material for card type '{darkSideColour}' not found.");
+        }
+    }
+
 
     public void PrintCardInfo()
     {
