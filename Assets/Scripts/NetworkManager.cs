@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Pun.Demo.PunBasics;
 using Photon.Realtime;
 using System;
 using System.Collections;
@@ -11,10 +12,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 	private const string ROOM = "room";
     private const string PLAYER = "player";
     private const int MAX_PLAYERS = 2;
+    private List<Card> deck;
+    [SerializeField] private UiManager uiManager;
+    
+    private PhotonView networkManagerPhotonView;
 
-	[SerializeField] private UiManager uiManager;
-
-	private QnoRoom playerRoom;
+    private QnoRoom playerRoom;
     public void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene=true;
@@ -62,12 +65,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
 	public override void OnJoinedRoom()
 	{
-		Debug.LogError($"Player {PhotonNetwork.LocalPlayer.ActorNumber} joined a room with level: {(QnoRoom)PhotonNetwork.CurrentRoom.CustomProperties[ROOM]}");
-		//gameInitializer.CreateMultiplayerBoard();
-		PreparePlayerSelectionOptions();
-		uiManager.ShowPlayerSelectionScreen();
+        int playerNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+        Debug.LogError($"Client {PhotonNetwork.LocalPlayer.ActorNumber} joined a room with level: {(QnoRoom)PhotonNetwork.CurrentRoom.CustomProperties[ROOM]}");
+		SelectPlayer(playerNumber);
+        //gameInitializer.CreateMultiplayerBoard();
+        GameManager.SetupCamerasForPlayer(playerNumber);
+        //PreparePlayerSelectionOptions();
+		//uiManager.ShowPlayerSelectionScreen();
+        uiManager.DisableAllScreens();
 
-	}
+    }
 
 
 	private void PreparePlayerSelectionOptions()
@@ -80,11 +87,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 				var occupiedPlayer = player.CustomProperties[PLAYER];
 				uiManager.RestrictPlayerChoice((PlayerNo)occupiedPlayer);
 			}
-		}
+            //PhotonNetwork.SetMasterClient(player);
+			//Debug.LogError($"Master is {player}");
+            //deckGenerateSync();
+        }
 	}
 
 	#endregion
-
+	public void deckGenerateSync()
+	{
+        deck = CardDeckGenerator.getDeck();
+        Debug.LogError($"deck is {deck}");
+        //gameManager.InitialiseGameObjects();
+        // gameManager.StartNewGame();
+        /*string deckDataJson = JsonUtility.ToJson(deck);
+        networkManagerPhotonView.RPC("SendDeckDataRPC", RpcTarget.Others, deckDataJson, gameManager);*/
+    }
 	public void SetPlayerRoom(QnoRoom room)
 	{
 		playerRoom = room;
@@ -93,6 +111,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public void SelectPlayer(int player)
     {
         PhotonNetwork.LocalPlayer.SetCustomProperties(new ExitGames.Client.Photon.Hashtable() { { PLAYER, player } });
+        Debug.LogError($"player selected is {player}");
+
     }
     /*public void SetPlayerTeam(int teamInt)
 	{

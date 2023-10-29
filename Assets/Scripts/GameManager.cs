@@ -145,21 +145,21 @@ public class GameManager : MonoBehaviour
     {
         activePlayer = player1;
 
-        player1FrontCamera.enabled = true;
+        /*player1FrontCamera.enabled = true;
         player2BackCamera.enabled = true;
 
         player1BackCamera.enabled = false;
-        player2FrontCamera.enabled = false;
+        player2FrontCamera.enabled = false;*/
 
         IterateChildrenRecursivelyAndSetBoxCollider(player1.handObject.transform, true);
         IterateChildrenRecursivelyAndSetBoxCollider(player2.handObject.transform, false);
         //TODO: Draw 7 cards in both player1's and player2's hand 
-        for(int i=0; i<14; i++)
+        for (int i = 0; i < 14; i++)
         {
             HandleDeckClick();
         }
-        StartCoroutine(WaitForCardsToBeInitialised());  
-        
+        StartCoroutine(WaitForCardsToBeInitialised());
+
     }
 
     IEnumerator WaitForCardsToBeInitialised()
@@ -170,6 +170,29 @@ public class GameManager : MonoBehaviour
         //TODO: Open a card onto the draw pile. Handle cases where drawn card is a wild card
         OpenFirstCard();
 
+    }
+    public static void SetupCamerasForPlayer(int playerNumber)
+    {
+
+        player1FrontCamera.enabled = false;
+        player1BackCamera.enabled = false;
+        player2FrontCamera.enabled = false;
+        player2BackCamera.enabled = false;
+
+        if (playerNumber == 1)
+        {
+            activePlayer = player1;
+            player1FrontCamera.enabled = true;
+            player2BackCamera.enabled = true;
+            Debug.Log("Camera For Player 1");
+        }
+        else if (playerNumber == 2)
+        {
+            activePlayer = player2;
+            player2FrontCamera.enabled = true;
+            player1BackCamera.enabled = true;
+            Debug.Log("Camera For Player 2");
+        }
     }
 
     private void ChangeActivePlayer()
@@ -182,7 +205,7 @@ public class GameManager : MonoBehaviour
         {
             activePlayer = player1;
         }
-        StartCoroutine(ChangePlayerView());
+        //StartCoroutine(ChangePlayerView());
         StartCoroutine(ChangeSelectableHand());
     }
 
@@ -283,7 +306,7 @@ public class GameManager : MonoBehaviour
         Card cardPlayed = cursorHoveredObject.gameObject.GetComponent<Card>();
 
         //TODO: Check if card being played is valid or not
-        if(!CheckIfCardPlayedIsValid(cardPlayed))
+        if (!CheckIfCardPlayedIsValid(cardPlayed))
         {
             Debug.Log("This Card cannot be played");
             return;
@@ -335,7 +358,7 @@ public class GameManager : MonoBehaviour
         Destroy(model.GetComponent<Animator>());
 
         int desiredLayer = LayerMask.NameToLayer("Discard Pile");
-        newCard.gameObject.layer = desiredLayer;    
+        newCard.gameObject.layer = desiredLayer;
         model.gameObject.layer = desiredLayer;
 
     }

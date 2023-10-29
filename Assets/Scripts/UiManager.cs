@@ -49,7 +49,7 @@ public class UiManager : MonoBehaviour
         DisableAllScreens();
         playerSelectionScreen.SetActive(true);
     }
-    private void DisableAllScreens()
+    public void DisableAllScreens()
     {
         connectScreen.SetActive(false);
         connectionStatusText.gameObject.SetActive(false);
