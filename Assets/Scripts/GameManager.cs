@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
     // Debug
     public Transform oppositeSide;
 
-    private void Awake()
+    /*private void Awake()
     {
         deck = CardDeckGenerator.getDeck();
         discardPileList = new List<Card>();
@@ -68,8 +68,24 @@ public class GameManager : MonoBehaviour
         InitialiseAnimatorComponents();
         CreatePlayers();
         StartNewGame();
-    }
+    }*/
+    public void ReceiveDeckFromNetwork(List<Card> receivedDeck)
+    {
+        
+        deck = receivedDeck;
+        MultiplayerGameStart();
 
+
+    }
+    public void MultiplayerGameStart()
+    {
+        
+        discardPileList = new List<Card>();
+        InitialiseGameObjects();
+        InitialiseAnimatorComponents();
+        CreatePlayers();
+        StartNewGame();
+    }
     private void InitialiseGameObjects()
     {
         cardUpdater = GetComponent<AddCardsToDeckObject>();
@@ -480,5 +496,10 @@ public class GameManager : MonoBehaviour
     public static bool IsLightSideUp()
     {
         return isLightSideUp;
+    }
+
+    internal static void MultiplayerGameStart(List<Card> deck)
+    {
+        throw new System.NotImplementedException();
     }
 }

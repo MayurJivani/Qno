@@ -8,13 +8,18 @@ using UnityEngine;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
-
-	private const string ROOM = "room";
+    
+    private List<Card> deck;
+    private const string ROOM = "room";
     private const string PLAYER = "player";
     private const int MAX_PLAYERS = 2;
-    private List<Card> deck;
     [SerializeField] private UiManager uiManager;
     
+    [Serializable]
+    public class DeckContainer
+    {
+        public List<Card> cards;
+    }
     private PhotonView networkManagerPhotonView;
 
     private QnoRoom playerRoom;
@@ -73,11 +78,60 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //PreparePlayerSelectionOptions();
 		//uiManager.ShowPlayerSelectionScreen();
         uiManager.DisableAllScreens();
-
+		PrepareDeck();
     }
 
+	public void PrepareDeck()
+	{
+		if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
+		{
+            deck = CardDeckGenerator.getDeck();
+            string deckJson = SerializeDeck(deck);
+            photonView.RPC("SendDeckToOthers", RpcTarget.Others, deckJson);
+           GameManager.MultiplayerGameStart();
+        }
+	}
+    [PunRPC]
+    public void SendDeckToOthers(string deckJson)
+    {
+        // Handle received deck data from other players
+        HandleReceivedDeck(deckJson);
+    }
 
-	private void PreparePlayerSelectionOptions()
+    private void HandleReceivedDeck(string deckJson)
+    {
+        List<Card> receivedDeck = DeserializeDeck(deckJson);
+
+        if (receivedDeck != null)
+        {
+            // Now you have the received deck as a list of cards
+            Debug.Log("Received deck from the network: " + receivedDeck.Count + " cards.");
+
+            // Call a method to handle the received deck, for example, passing it to your GameManager
+            GameManager.ReceiveDeckFromNetwork(receivedDeck);
+        }
+        else
+        {
+            Debug.LogError("Failed to handle received deck. Deck is null.");
+        }
+    }
+
+    public string SerializeDeck(List<Card> deck)
+    {
+        DeckContainer container = new DeckContainer
+        {
+            cards = deck
+        };
+
+        return JsonUtility.ToJson(container);
+    }
+
+    public List<Card> DeserializeDeck(string deckJson)
+    {
+        DeckContainer container = JsonUtility.FromJson<DeckContainer>(deckJson);
+        return container?.cards ?? new List<Card>();
+    }
+    private void PreparePlayerSelectionOptions()
 	{
 		if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
 		{
@@ -114,7 +168,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Debug.LogError($"player selected is {player}");
 
     }
-    /*public void SetPlayerTeam(int teamInt)
+	/*public void SetPlayerTeam(int teamInt)
 	{
 		if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
 		{
@@ -132,7 +186,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 		chessGameController.StartNewGame();
 	}*/
 
-
+	
 
     internal bool IsRoomFull()
 	{
