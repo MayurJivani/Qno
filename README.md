@@ -7,6 +7,8 @@
 [![Issues](https://img.shields.io/github/issues/MayurJivani/Qno?style=flat-square)](https://github.com/MayurJivani/Qno/issues)
 ![Code size](https://img.shields.io/github/languages/code-size/MayurJivani/Qno?style=flat-square)
 [![Last commit](https://img.shields.io/github/last-commit/MayurJivani/Qno?style=flat-square)](https://github.com/MayurJivani/Qno/commits/main)
+![uno](https://img.shields.io/badge/uno-but%20quantum-8e44ad?style=flat-square)
+![physics](https://img.shields.io/badge/physics-as%20a%20card%20in%20your%20hand-2980b9?style=flat-square)
 
 A Unity card game at the intersection of quantum computing and Uno. The
 familiar rules are still there; superposition, entanglement and quantum gates
